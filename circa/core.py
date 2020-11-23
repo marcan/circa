@@ -55,6 +55,8 @@ class IRCode(object):
 
     @classmethod
     def from_code(cls, code):
+        if type(code) == cls:
+            return code.clone()
         obj = cls()
         obj.parse_code(code)
         return obj

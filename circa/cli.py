@@ -1,15 +1,19 @@
 #!/usr/bin/python
-import argparse, itertools
+import json, sys, argparse, itertools
 
 from . import from_string, try_decode, find_format, find_device
 
 def do_convert(args):
     code = from_string(args.code)
-    target = find_format(args.format)
+    target = find_format(args.format) if args.format else type(code)
     converted = target.from_code(code)
     if args.threshold is not None:
         converted.simplify_params(args.threshold)
-    print(converted.to_string())
+    if not args.structure:
+        print(converted.to_string())
+    else:
+        json.dump(converted.to_struct(), sys.stdout, indent=4)
+        print()
 
 def do_simplify(args):
     code = from_string(args.code)
@@ -47,8 +51,9 @@ def main():
     subparsers.required = True
 
     p_convert = subparsers.add_parser('convert', description="Convert a code to another format")
-    p_convert.add_argument('-f', "--format", metavar="FORMAT", type=str, default="raw", help="target format")
+    p_convert.add_argument('-f', "--format", metavar="FORMAT", type=str, default=None, help="target format")
     p_convert.add_argument('-t', "--threshold", type=float, default=None, metavar="THRESHOLD", help="also simplify")
+    p_convert.add_argument('-s', "--structure", action="store_true", help="output in structure format")
     p_convert.add_argument('code', metavar='TYPE:CODE', type=str, help='IR code to convert')
     p_convert.set_defaults(func=do_convert)
 

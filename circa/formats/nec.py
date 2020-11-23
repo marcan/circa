@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import statistics
+
 from ..core import IRCode, DataError, DecodeError
 from ..util import to_bits_lsb, from_bits_lsb
 
@@ -18,7 +20,8 @@ class NECCode(IRCode):
         yield ("repeat_time_high", "rh", int, self.preamble_time_high)
         yield ("repeat_time_low", "rl", int, self.preamble_time_low // 2)
         yield ("address_bytes", "a", int, 0)
-        yield ("packet_interval", "pi", int, self.pulse_time * 192)
+        yield ("packet_gap", "pg", int, 0)
+        yield ("packet_interval", "pi", int, self.pulse_time * 192 if self.packet_gap == 0 else 0)
         yield ("repeat_interval", "ri", int, self.packet_interval)
         yield ("burst_count", "b", int, 0)
         yield ("burst_time_high", "bh", int, self.pulse_time)
@@ -58,7 +61,7 @@ class NECCode(IRCode):
                     pulses.append(self.space_time_0)
 
         pulses.append(self.pulse_time)
-        pulses.append(self.pulse_time)
+        pulses.append(max(self.pulse_time, self.packet_gap))
         padding = 0
 
         return 1, pulses
@@ -126,6 +129,9 @@ class NECCode(IRCode):
                     raise DataError("No data")
                 break
 
+            if packets and not repeats:
+                self._sample("packet_gap", pulses[p - 3])
+
             while p < (len(pulses)-1):
                 mark, space = pulses[p:p+2]
                 if (bits or packets) and mark > self.pulse_time * 2:
@@ -166,7 +172,18 @@ class NECCode(IRCode):
 
             last_packet_length = sum(pulses[packet_start:p])
 
-        self._sample_default("packet_interval", self.pulse_time * 192)
+        # Packet spacing can be specified with either an interval or a gap.
+        # Pick whichever one works best.
+        if "packet_interval" in self._samples and "packet_gap" in self._samples:
+            vi = statistics.variance(self._samples["packet_interval"])
+            vg = statistics.variance(self._samples["packet_gap"])
+            if vi > vg:
+                del self._samples["packet_interval"]
+            else:
+                del self._samples["packet_gap"]
+
+        self._sample_default("packet_gap", 0)
+        self._sample_default("packet_interval", self.pulse_time * 192 if self.packet_gap == 0 else 0)
         self._sample_default("repeat_interval", self.packet_interval)
         self._sample_default("repeat_time_high", self.preamble_time_high)
         self._sample_default("repeat_time_low", self.preamble_time_low // 2)

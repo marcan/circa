@@ -175,12 +175,16 @@ class NECCode(IRCode):
         # Packet spacing can be specified with either an interval or a gap.
         # Pick whichever one works best.
         if "packet_interval" in self._samples and "packet_gap" in self._samples:
-            vi = statistics.variance(self._samples["packet_interval"])
-            vg = statistics.variance(self._samples["packet_gap"])
-            if vi > vg:
-                del self._samples["packet_interval"]
+            if len(self._samples["packet_interval"]) > 1 and len(self._samples["packet_gap"]) > 1:
+                vi = statistics.variance(self._samples["packet_interval"])
+                vg = statistics.variance(self._samples["packet_gap"])
+                if vi > vg:
+                    del self._samples["packet_interval"]
+                else:
+                    del self._samples["packet_gap"]
             else:
-                del self._samples["packet_gap"]
+                # Just two packets, go with gap
+                del self._samples["packet_interval"]
 
         self._sample_default("packet_gap", 0)
         self._sample_default("packet_interval", self.pulse_time * 192 if self.packet_gap == 0 else 0)

@@ -191,6 +191,9 @@ class NECCode(IRCode):
         self._sample_default("repeat_interval", self.packet_interval)
         self._sample_default("repeat_time_high", self.preamble_time_high)
         self._sample_default("repeat_time_low", self.preamble_time_low // 2)
+        self._sample_default("burst_time_high", self.pulse_time)
+        self._sample_default("burst_time_low", self.pulse_time)
+        self._sample_default("burst_gap", self.pulse_time * 60)
 
         self.address_bytes = len(packets[0]) & 1 # if odd number of bytes, at least one address byte is required
         for packet in packets:

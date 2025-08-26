@@ -41,8 +41,8 @@ class IRCode(object):
         self = cls()
         parts = code.split(":", 1)
         if len(parts) == 1:
-            data, = parts
-            self._set_params()
+            params, = parts
+            self._set_params_from_string(options)
         else:
             options, data = parts
             self._set_params_from_string(options)
@@ -143,7 +143,7 @@ class IRCode(object):
         if params:
             return "%s:%s:%s" % (name, ",".join(params), data)
         else:
-            return "%s:%s" % (name, data)
+            return "%s::%s" % (name, data)
 
     def to_struct(self, full=False):
         struct = {"format": self.NAMES[0]}

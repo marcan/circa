@@ -9,7 +9,7 @@ __all__ = ["BroadlinkCode"]
 
 class BroadlinkCode(IRCode):
     NAMES = ["broadlink", "b64"]
-    CLOCK = 30453
+    CLOCK = 32768
 
     def __init__(self, data=None, **kwargs):
         super().__init__(data, **kwargs)

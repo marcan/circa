@@ -82,6 +82,12 @@ class IRCode(object):
 
         return self
 
+    @classmethod
+    def from_template_and_data(cls, typename, params_string, data):
+        self = cls.from_string(typename, params_string)
+        self._set_data(data)
+        return self
+
     def clone(self, data=True):
         cls = type(self)
         new = cls()

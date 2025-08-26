@@ -43,6 +43,24 @@ def from_struct(s):
             return fmt.from_struct(s)
     raise ParseError("Format type %s not supported" % fmtname)
 
+def from_template_and_data(template, data):
+    fmtname, config = template.split(":", 1)
+    fmt = find_format(fmtname)
+    return fmt.from_template_and_data(fmtname, config, data)
+
+def from_generic(d):
+    if isinstance(d, str):
+        return from_string(d)
+    elif isinstance(d, tuple) and len(d) == 2:
+        return from_template_and_data(d[0], d[1])
+    elif isinstance(d, tuple) and len(d) == 3:
+        fmt = find_format(d[0])
+        return fmt.from_template_and_data(d[0], d[1], d[2])
+    elif isinstance(d, dict):
+        return from_struct(d)
+    else:
+        raise ValueError(f"Unknown code structure: {d!r}")
+
 def compare_codes(a, b):
     a = a.to_raw().flatten().data[0]["pulses"]
     b = b.to_raw().flatten().data[0]["pulses"]

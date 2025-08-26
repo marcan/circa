@@ -32,7 +32,7 @@ class IRCode(object):
             try:
                 k, v = opt.split("=", 1)
             except:
-                raise ParseError("Could not parse option %r" % opt)
+                raise ParseError(f"Could not parse option {opt!r}")
             values[k] = v
         self._set_params(values, short=True)
 
@@ -71,11 +71,11 @@ class IRCode(object):
         s = dict(struct)
         fmt = s.pop("format", None)
         if fmt is not None and fmt not in self.NAMES:
-            raise DataError("Format mismatch: %r expected one of %r" % (fmt, self.NAMES))
+            raise DataError(f"Format mismatch: {fmt!r} expected one of {self.NAMES!r}")
 
         data = s.pop("data", None)
         if data is None:
-            raise DataError("No data in %r" % data)
+            raise DataError(f"No data in {data!r}")
 
         self._set_params(s)
         self._set_data(data)
@@ -112,7 +112,7 @@ class IRCode(object):
             setattr(self, lname, validate(values.pop(name, default)))
 
         if values:
-            raise DataError("Unknown options: %r" % list(values.keys()))
+            raise DataError(f"Unknown options: {list(values.keys())!r}")
 
     def _set_data(self, data):
         self.data = [self._parse_packet(packet) for packet in data]
@@ -144,12 +144,12 @@ class IRCode(object):
         for lname, sname, validate, default in self.params():
             val = getattr(self, lname)
             if val != default:
-                params.append("%s=%s" % (sname, val))
+                params.append(f"{sname}={val}")
         data = ";".join(self._format_one_string_data(i) for i in self.data)
         if params:
-            return "%s:%s:%s" % (name, ",".join(params), data)
+            return f"{name}:{','.join(params)}:{data}"
         else:
-            return "%s::%s" % (name, data)
+            return f"{name}::{data}"
 
     def to_struct(self, full=False):
         struct = {"format": self.NAMES[0]}
@@ -195,12 +195,12 @@ class RawCode(IRCode):
         for packet in self.data:
             for key in packet:
                 if key not in ("pulses", "count"):
-                    raise DataError("Unsupported key: %r" % key)
+                    raise DataError(f"Unsupported key: {key!r}")
             if "pulses" not in packet:
-                raise DataError("IR packet with no pulses: %r" % packet)
+                raise DataError(f"IR packet with no pulses: {packet!r}")
             v = packet["pulses"]
             if len(v) % 2 != 0:
-                raise DataError("IR pulse data length not a multiple of 2" % packet)
+                raise DataError(f"IR pulse data length not a multiple of 2: {packet!r}")
 
     def _parse_string_data(self, data):
         l = [self._parse_one_string_data(i) for i in data.split(";")]

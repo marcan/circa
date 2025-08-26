@@ -32,14 +32,14 @@ class BroadlinkCode(IRCode):
             try:
                 base64.b64decode(packet)
             except:
-                raise DataError("Invalid base64 data: %r" % packet)
+                raise DataError(f"Invalid base64 data: {packet!r}")
         return packet
 
     def _parse_one_string_data(self, s):
         try:
             base64.b64decode(s)
         except:
-            raise ParseError("Invalid base64 data: %r" % s)
+            raise ParseError(f"Invalid base64 data: {s!r}")
         return s
 
     def parse_code(self, code):
@@ -48,21 +48,21 @@ class BroadlinkCode(IRCode):
         pulses = scale_pulses(code.data[0]["pulses"], 1000000, self.CLOCK)
 
         if code.count > 256:
-            raise DecodeError("Broadlink format only supports up to 256 repeats (got: %d)" % code.count)
+            raise DecodeError(f"Broadlink format only supports up to 256 repeats (got: {code.count})")
 
         packet = []
         for pulse in pulses:
             if pulse < 1:
                 raise DecodeError("Pulse length < 1")
             elif pulse > 0xffff:
-                raise DecodeError("Pulse length too long (%d)" % pulse)
+                raise DecodeError(f"Pulse length too long: {pulse}")
             elif pulse > 255:
                 packet += [0, pulse >> 8, pulse & 0xff]
             else:
                 packet.append(pulse)
 
         if len(packet) > 0xffff:
-            raise DecodeError("Packet is too long (%d bytes)" % len(packet))
+            raise DecodeError(f"Packet is too long: {len(packet)} bytes")
 
         packet = [0x26, code.count - 1, len(packet) & 0xff, len(packet) >> 8, *packet]
 
@@ -77,7 +77,7 @@ class BroadlinkCode(IRCode):
     def encode_packet(self, packet, state=None):
         data = base64.b64decode(packet)
         if data[0] != 0x26:
-            raise EncodeError("Packet header is not 0x26: 0x%02x" % (data[0]))
+            raise EncodeError(f"Packet header is not 0x26: 0x{data[0]:02x}")
 
         count = data[1] + 1
         length = data[2] + (data[3] << 8)

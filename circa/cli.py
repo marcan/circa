@@ -23,7 +23,7 @@ def do_simplify(args):
 def do_decode(args):
     code = from_string(args.code)
     for score, guess in try_decode(code):
-        print("%.01f%% %s" % (score * 100, guess))
+        print(f"{score * 100:.01f}% {guess}")
 
 def do_transmit(args):
     code = from_string(args.code)
@@ -42,7 +42,7 @@ def do_receive(args):
         code = dev.receive()
         print("=== Received code ===")
         for score, guess in try_decode(code):
-            print("%.01f%% %s" % (score * 100, guess))
+            print(f"{score * 100:.01f}% {guess}")
 
 def main():
     parser = argparse.ArgumentParser(prog="PROG", description='IR code multitool')

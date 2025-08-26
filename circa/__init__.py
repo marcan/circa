@@ -21,13 +21,13 @@ def find_format(fmtname):
     for fmt in FORMATS:
         if fmtname in fmt.NAMES:
             return fmt
-    raise ParseError("Format type %s not supported" % fmtname)
+    raise ParseError(f"Format type {fmtname} not supported")
 
 def find_device(devname):
     for dev in DEVICES:
         if devname in dev.NAMES:
             return dev
-    raise ParseError("Device type %s not supported" % devname)
+    raise ParseError(f"Device type {devname} not supported")
 
 def from_string(s):
     fmtname, data = s.split(":", 1)
@@ -41,7 +41,7 @@ def from_struct(s):
     for fmt in FORMATS:
         if fmtname in fmt.NAMES:
             return fmt.from_struct(s)
-    raise ParseError("Format type %s not supported" % fmtname)
+    raise ParseError(f"Format type {fmtname} not supported")
 
 def from_template_and_data(template, data):
     fmtname, config = template.split(":", 1)

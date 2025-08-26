@@ -34,14 +34,14 @@ class NECCode(IRCode):
     def _parse_packet(self, packet):
         for i in packet:
             if not isinstance(i, int) or not 0 <= i <= 255:
-                raise DataError("Invalid data byte: %r" % i)
+                raise DataError(f"Invalid data byte: {i!r}")
         return packet
 
     def _parse_one_string_data(self, s):
         return [int(i, 16) for i in s.split(",")]
 
     def _format_one_string_data(self, d):
-        return ",".join("%02x" % i for i in d)
+        return ",".join(f"{i:02x}" for i in d)
 
     @property
     def data_start(self):

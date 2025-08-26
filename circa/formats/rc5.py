@@ -18,15 +18,15 @@ class RC5Code(IRCode):
             addr, cmd = map(int, packet)
         elif isinstance(packet, dict):
             if set(packet.keys()) != set(("addr", "cmd")):
-                raise DataError("Unsupported packet keys: %r (expected addr, cmd)" % list(packet.keys()))
+                raise DataError(f"Unsupported packet keys: {list(packet.keys())!r} (expected addr, cmd)")
             try:
                 addr, cmd = int(packet["addr"]), int(packet["cmd"])
             except:
-                raise DataError("Invalid packet data %r" % packet)
+                raise DataError(f"Invalid packet data {packet!r}")
         if not 0 <= addr <= 31:
-            raise DataError("Address %d not in [0..31]" % addr)
-        if not 0 <= addr <= 127:
-            raise DataError("Command %d not in [0..127]" % addr)
+            raise DataError(f"Address {addr} not in [0..31]")
+        if not 0 <= cmd <= 127:
+            raise DataError(f"Command {cmd} not in [0..127]")
         return {"addr": addr, "cmd": cmd}
 
     def _parse_one_string_data(self, s):
@@ -42,7 +42,7 @@ class RC5Code(IRCode):
         toggle = 1
 
         if state is not None:
-            key = "rc5-toggle-%d-%d" % (addr, cmd)
+            key = f"rc5-toggle-{addr}-{cmd}"
             toggle = state.get(key, 1)
 
         toggle ^= 1
@@ -140,7 +140,7 @@ class RC5Code(IRCode):
 
             # Allow some garbage at the end
             if not 14 <= len(bits) <= 16:
-                raise DataError("Packet length invalid (%d)" % len(bits))
+                raise DataError(f"Packet length invalid: {len(bits)}")
 
             bits = bits[:14]
             toggle = bits[2]

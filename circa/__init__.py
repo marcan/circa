@@ -89,13 +89,17 @@ def try_decode(code):
             ncode = fmt.from_code(code)
         except:
             continue
-        guesses.append((compare_codes(raw, ncode), ncode))
+
+        score = compare_codes(raw, ncode)
+        if score < 0.5:
+            continue
+        guesses.append((score, ncode))
 
         best_scode = None
         for threshold in (0.05, 0.1, 0.15, 0.2, 0.25):
             scode = ncode.clone()
             scode.simplify_params(threshold)
-            score =compare_codes(raw, scode)
+            score = compare_codes(raw, scode)
             if score < 0.7:
                 break
             best_scode = score, scode

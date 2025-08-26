@@ -28,11 +28,12 @@ class IRCode(object):
 
     def _set_params_from_string(self, options):
         values = {}
-        for opt in options.split(","):
-            try:
-                k, v = opt.split("=", 1)
-            except:
-                raise ParseError(f"Could not parse option {opt!r}")
+        if options:
+            for opt in options.split(","):
+                try:
+                    k, v = opt.split("=", 1)
+                except:
+                    raise ParseError(f"Could not parse option {opt!r}")
             values[k] = v
         self._set_params(values, short=True)
 
@@ -41,7 +42,7 @@ class IRCode(object):
         self = cls()
         parts = code.split(":", 1)
         if len(parts) == 1:
-            params, = parts
+            options, = parts
             self._set_params_from_string(options)
         else:
             options, data = parts

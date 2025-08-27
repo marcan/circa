@@ -211,7 +211,11 @@ class RawCode(IRCode):
             return [{"data": i} for i in l]
 
     def _parse_one_string_data(self, s):
-        return [int(i) for i in s.split(",")]
+        if s and s[0] == "[" and s[-1] == "]":
+            s = s[1:-1]
+        d = [abs(int(i.strip())) for i in s.split(",")]
+        if len(d) % 2 == 1:
+            d.append(1000)
 
     def _format_one_string_data(self, d):
         s = ",".join(str(int(i)) for i in d["pulses"])

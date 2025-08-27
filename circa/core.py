@@ -221,7 +221,7 @@ class RawCode(IRCode):
     def _parse_one_string_data(self, s):
         if s and s[0] == "[" and s[-1] == "]":
             s = s[1:-1]
-        d = [abs(int(i.strip())) for i in s.split(",")]
+        d = [abs(int(i.strip())) for i in s.replace(",", " ").split()]
         if len(d) % 2 == 1:
             d.append(1000)
 

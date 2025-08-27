@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import copy
 
-__all__ = ["CircaError", "ParseError", "DataError", "EncodeError", "DecodeError", "IRCode", "RawCode"]
+__all__ = ["CircaError", "ParseError", "DataError", "EncodeError", "DecodeError", "IRCode", "RawCode", "RawPmCode"]
 
 class CircaError(Exception):
     pass
@@ -89,15 +89,18 @@ class IRCode(object):
         self._set_data(data)
         return self
 
+    def _clone_from(self, other, data=True):
+        if data:
+            self.data = copy.deepcopy(other.data)
+        else:
+            self.data = None
+        for lname, sname, validate, default in other.params():
+            setattr(self, lname, getattr(other, lname))
+
     def clone(self, data=True):
         cls = type(self)
         new = cls()
-        if data:
-            new.data = copy.deepcopy(self.data)
-        else:
-            new.data = None
-        for lname, sname, validate, default in self.params():
-            setattr(new, lname, getattr(self, lname))
+        new._clone_from(self, data)
         return new
 
     def _parse_string_data(self, data):
@@ -226,7 +229,9 @@ class RawCode(IRCode):
 
     @classmethod
     def from_code(cls, code):
-        return code.to_raw()
+        self = cls()
+        self._clone_from(code.to_raw())
+        return self
 
     def to_raw(self, state=None):
         return self
@@ -256,3 +261,12 @@ class RawCode(IRCode):
         flat.packet_interval = 0
 
         return flat
+
+class RawPmCode(RawCode):
+    NAMES = ["rawpm"]
+
+    def _format_one_string_data(self, d):
+        s = ",".join(str(int(j * (1 - 2 * (i % 2)))) for i, j in enumerate(d["pulses"]))
+        if "count" in d and d["count"] != 1:
+            s = "%d/" % d["count"] + s
+        return s

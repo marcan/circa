@@ -9,6 +9,7 @@ from .devices.broadlink import BroadlinkDevice
 
 FORMATS = [
     RawCode,
+    RawPmCode,
     RC5Code,
     NECCode,
     BroadlinkCode,

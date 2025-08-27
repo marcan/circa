@@ -21,7 +21,7 @@ DEVICES = [
 
 def find_format(fmtname):
     for fmt in FORMATS:
-        if fmtname in fmt.NAMES:
+        if fmtname.lower() in fmt.NAMES:
             return fmt
     raise ParseError(f"Format type {fmtname} not supported")
 

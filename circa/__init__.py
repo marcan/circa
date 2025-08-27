@@ -3,7 +3,7 @@
 from .core import *
 from .formats.nec import NECCode
 from .formats.rc5 import RC5Code
-from .formats.broadlink import BroadlinkCode
+from .formats.broadlink import BroadlinkCode, BroadlinkHexCode
 from .formats.pronto import ProntoCode
 from .devices.broadlink import BroadlinkDevice
 
@@ -12,6 +12,7 @@ FORMATS = [
     RC5Code,
     NECCode,
     BroadlinkCode,
+    BroadlinkHexCode,
     ProntoCode,
 ]
 

@@ -5,7 +5,7 @@ import base64
 from ..core import *
 from ..util import scale_pulses
 
-__all__ = ["BroadlinkCode"]
+__all__ = ["BroadlinkCode", "BroadlinkHexCode"]
 
 class BroadlinkCode(IRCode):
     NAMES = ["broadlink", "b64"]
@@ -99,3 +99,15 @@ class BroadlinkCode(IRCode):
         pulses = scale_pulses(pulses, self.CLOCK, 1000000)
 
         return count, pulses
+
+class BroadlinkHexCode(BroadlinkCode):
+    NAMES = ["broadlink-hex"]
+
+    def _parse_one_string_data(self, s):
+        try:
+            return base64.b64encode(bytes.fromhex(s)).decode("ascii")
+        except:
+            raise ParseError(f"Invalid hex data: {s!r}")
+
+    def _format_one_string_data(self, d):
+        return base64.b64decode(d).hex()

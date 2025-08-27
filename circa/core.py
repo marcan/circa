@@ -139,7 +139,7 @@ class IRCode(object):
     def encode_packet(self, packet, state=None):
         raise NotImplementedError()
 
-    def to_string(self):
+    def to_string_parts(self):
         name = self.NAMES[0]
         params = []
         for lname, sname, validate, default in self.params():
@@ -147,10 +147,11 @@ class IRCode(object):
             if val != default:
                 params.append(f"{sname}={val}")
         data = ";".join(self._format_one_string_data(i) for i in self.data)
-        if params:
-            return f"{name}:{','.join(params)}:{data}"
-        else:
-            return f"{name}::{data}"
+        return name, ','.join(params), data
+
+    def to_string(self):
+        typename, params, data = self.to_string_parts()
+        return f"{typename}:{params}:{data}"
 
     def to_struct(self, full=False):
         struct = {"format": self.NAMES[0]}

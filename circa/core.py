@@ -224,6 +224,7 @@ class RawCode(IRCode):
         d = [abs(int(i.strip())) for i in s.replace(",", " ").split()]
         if len(d) % 2 == 1:
             d.append(1000)
+        return d
 
     def _format_one_string_data(self, d):
         s = ",".join(str(int(i)) for i in d["pulses"])

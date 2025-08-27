@@ -31,10 +31,11 @@ def find_device(devname):
             return dev
     raise ParseError(f"Device type {devname} not supported")
 
-def from_string(s):
-    fmtname, data = s.split(":", 1)
+def from_string(s, fmtname=None):
+    if fmtname is None:
+        fmtname, s = s.split(":", 1)
     fmt = find_format(fmtname)
-    return fmt.from_string(fmtname, data)
+    return fmt.from_string(fmtname, s)
 
 def from_struct(s):
     if "format" not in s:

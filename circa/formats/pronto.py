@@ -2,7 +2,7 @@
 
 import base64
 
-from ..core import IRCode, DataError, DecodeError, EncodeError
+from ..core import *
 from ..util import scale_pulses
 
 __all__ = ["ProntoCode"]

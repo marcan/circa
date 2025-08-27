@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-from ..core import IRCode, DataError
+from ..core import *
 from ..util import to_bits_msb, from_bits_msb
 
 __all__ = ["RC5Code"]

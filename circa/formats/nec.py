@@ -2,7 +2,7 @@
 
 import statistics
 
-from ..core import IRCode, DataError, DecodeError
+from ..core import *
 from ..util import to_bits_lsb, from_bits_lsb
 
 __all__ = ["NECCode"]

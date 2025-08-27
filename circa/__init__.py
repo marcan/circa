@@ -92,7 +92,7 @@ def try_decode(code):
     for fmt in FORMATS:
         try:
             ncode = fmt.from_code(code)
-        except:
+        except Exception:
             continue
 
         score = compare_codes(raw, ncode)

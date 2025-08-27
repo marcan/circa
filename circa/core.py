@@ -194,9 +194,9 @@ class RawCode(IRCode):
     NAMES = ["raw"]
 
     def _set_data(self, data):
-        if data is None:
-            self.data = None
-        elif isinstance(data, list) and isinstance(data[0], int):
+        assert data is not None
+
+        if isinstance(data, list) and isinstance(data[0], int):
             # single string of data
             self.data = [{"pulses": data}]
         else:

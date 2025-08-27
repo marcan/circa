@@ -60,7 +60,7 @@ def from_generic(d):
         return from_template_and_data(d[0], d[1])
     elif isinstance(d, tuple) and len(d) == 3:
         fmt = find_format(d[0])
-        return fmt.from_template_and_data(d[0], d[1], d[2])
+        return fmt.from_template_and_data(d[1], d[2])
     elif isinstance(d, dict):
         return from_struct(d)
     else:

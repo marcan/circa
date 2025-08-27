@@ -84,8 +84,9 @@ class IRCode(object):
         return self
 
     @classmethod
-    def from_template_and_data(cls, typename, params_string, data):
-        self = cls.from_string(typename, params_string)
+    def from_template_and_data(cls, params_string, data):
+        self = cls()
+        self._set_params_from_string(params_string)
         self._set_data(data)
         return self
 

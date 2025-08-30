@@ -19,7 +19,12 @@ class NECCode(IRCode):
         yield ("preamble_time_low", "pl", int, self.preamble_time_high // 2)
         yield ("repeat_time_high", "rh", int, self.preamble_time_high)
         yield ("repeat_time_low", "rl", int, self.preamble_time_low // 2)
-        yield ("address_bytes", "a", int, 0)
+        yield ("complement_mode", "cm", int, 0)
+        # 0 = No complementing
+        # 1 = Complement data only
+        # 2 = Complement address only
+        # 3 = Complement address and data
+        yield ("address_bytes", "a", int, [-1, 2, 2, 1][self.complement_mode])
         yield ("packet_gap", "pg", int, 0)
         yield ("packet_interval", "pi", int, self.pulse_time * 192 if self.packet_gap == 0 else 0)
         yield ("repeat_interval", "ri", int, self.packet_interval)
@@ -53,18 +58,16 @@ class NECCode(IRCode):
         elif self.checksum_type != 0:
             raise DataError(f"Invalid checksum type {self.checksum_type}")
 
-        if self.address_bytes < 0:
-            data, payload = packet, []
-        else:
-            data, payload = packet[:self.address_bytes], packet[self.address_bytes:]
+        address, data = packet[:self.data_start], packet[self.data_start:]
 
-        for i in payload:
-            data.append(i)
-            data.append(i ^ 0xff)
+        if self.complement_mode & 1:
+            data = sum([[i, i ^ 0xff] for i in data], [])
+        if self.complement_mode & 2:
+            address = sum([[i, i ^ 0xff] for i in address], [])
 
         pulses = [self.preamble_time_high, self.preamble_time_low]
 
-        for byte in data:
+        for byte in (address + data):
             for bit in to_bits_lsb(byte, 8):
                 pulses.append(self.pulse_time)
                 if bit:
@@ -207,27 +210,53 @@ class NECCode(IRCode):
         self._sample_default("burst_time_low", self.pulse_time)
         self._sample_default("burst_gap", self.pulse_time * 60)
 
-        self.address_bytes = len(packets[0]) & 1 # if odd number of bytes, at least one address byte is required
+        head_complements = []
+        head_noncomplements = []
         for packet in packets:
             inv = 0
+            head_complements.append(0)
+            head_noncomplements.append(len(packet))
             for b1, b2 in zip(*([iter(packet[::-1])] * 2)):
                 if b1 == b2 ^ 0xff:
-                    inv += 2
+                    head_noncomplements[-1] -= 2
                 else:
                     break
-            ab = len(packet) - inv
-            if (ab ^ self.address_bytes) & 1: # if the length parity is off, bail
-                self.address_bytes = -1
-                break
-            self.address_bytes = max(ab, self.address_bytes)
+
+            for b1, b2 in zip(*([iter(packet)] * 2)):
+                if b1 == b2 ^ 0xff:
+                    head_complements[-1] += 1
+                else:
+                    break
+
+        if all(i * 2 == len(j) for i,j in zip(head_complements, packets)):
+            min_len = min(head_complements)
+            # Everything is complemented, take a guess at address_bytes...
+            self.address_bytes = min(max(min_len - 1, 0), 2)
+            self.complement_mode = 3
+        elif min(head_complements) > 1:
+            self.address_bytes = min(head_complements)
+            self.complement_mode = 2
+        elif max(head_noncomplements) > 1:
+            self.address_bytes = max(head_noncomplements)
+            self.complement_mode = 1
+        else:
+            self.address_bytes = -1
+            self.complement_mode = 0
 
         for packet in packets:
             if len(packet) <= self.address_bytes:
                 self.address_bytes = -1
+                self.complement_mode = 0
                 break
 
-        if self.address_bytes != -1:
+        if self.complement_mode == 3:
+            packets = [packet[::2] for packet in packets]
+        elif self.complement_mode == 2:
+            packets = [packet[:self.address_bytes * 2:2] + packet[self.address_bytes * 2:] for packet in packets]
+        elif self.complement_mode == 1:
             packets = [packet[:self.address_bytes] + packet[self.address_bytes::2] for packet in packets]
+
+        self.checksum_type = 0
 
         for packet in packets:
             dlen = len(packet) - self.data_start

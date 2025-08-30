@@ -29,7 +29,7 @@ class NECCode(IRCode):
         yield ("burst_gap", "bg", int, self.pulse_time * 60)
         # 0 = No checksum
         # 1 = sum mod 256 of data bytes, appended (no address)
-        yield ("checksum_type", "c", int, 0)
+        yield ("checksum_type", "ck", int, 0)
 
     def _parse_packet(self, packet):
         for i in packet:

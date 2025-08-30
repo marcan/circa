@@ -34,6 +34,7 @@ class NECCode(IRCode):
         yield ("burst_gap", "bg", int, self.pulse_time * 60)
         # 0 = No checksum
         # 1 = sum mod 256 of data bytes, appended (no address)
+        # 2 = xor of data bytes, appended (no address)
         yield ("checksum_type", "ck", int, 0)
 
     def _parse_packet(self, packet):
@@ -53,7 +54,12 @@ class NECCode(IRCode):
         return self.address_bytes if self.address_bytes != -1 else 0
 
     def encode_packet(self, packet, state=None):
-        if self.checksum_type == 1:
+        if self.checksum_type == 2:
+            xor = 0
+            for i in packet[self.data_start:]:
+                xor ^= i
+            packet = list(packet) + [xor]
+        elif self.checksum_type == 1:
             packet = list(packet) + [sum(packet[self.data_start:]) & 0xff]
         elif self.checksum_type != 0:
             raise DataError(f"Invalid checksum type {self.checksum_type}")
@@ -265,6 +271,18 @@ class NECCode(IRCode):
         else:
             self.checksum_type = 1
             packets = [packet[:-1] for packet in packets]
+
+        if self.checksum_type == 0:
+            for packet in packets:
+                dlen = len(packet) - self.data_start
+                xor = 0
+                for i in packet[-dlen:-1]:
+                    xor ^= i
+                if dlen < 2 or packet[-1] != xor:
+                    break
+            else:
+                self.checksum_type = 2
+                packets = [packet[:-1] for packet in packets]
 
         self.data = packets
         self.count = repeats + 1

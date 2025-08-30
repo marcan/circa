@@ -34,7 +34,7 @@ class IRCode(object):
                     k, v = opt.split("=", 1)
                 except:
                     raise ParseError(f"Could not parse option {opt!r}")
-            values[k] = v
+                values[k] = v
         self._set_params(values, short=True)
 
     @classmethod

@@ -3,12 +3,13 @@
 import statistics
 
 from ..core import *
-from ..util import to_bits_lsb, from_bits_lsb
+from ..util import to_bits_lsb, from_bits_lsb, to_bits_msb, from_bits_msb
 
-__all__ = ["NECCode"]
+__all__ = ["NECCode", "NECBCode"]
 
 class NECCode(IRCode):
     NAMES = ["nec"]
+    ENDIAN = "l"
 
     def params(self):
         yield from (i for i in super().params() if i[0] not in "packet_interval")
@@ -74,7 +75,7 @@ class NECCode(IRCode):
         pulses = [self.preamble_time_high, self.preamble_time_low]
 
         for byte in (address + data):
-            for bit in to_bits_lsb(byte, 8):
+            for bit in to_bits_lsb(byte, 8) if self.ENDIAN == "l" else to_bits_msb(byte, 8):
                 pulses.append(self.pulse_time)
                 if bit:
                     pulses.append(self.space_time_1)
@@ -177,7 +178,10 @@ class NECCode(IRCode):
                 self._sample("preamble_time_low", hl)
                 if repeats > 0:
                     raise DataError("Data packet after a repeat packet")
-                packets.append([from_bits_lsb(bits[i:i+8]) for i in range(0, len(bits) - 1, 8)])
+                if self.ENDIAN == "l":
+                    packets.append([from_bits_lsb(bits[i:i+8]) for i in range(0, len(bits) - 1, 8)])
+                else:
+                    packets.append([from_bits_msb(bits[i:i+8]) for i in range(0, len(bits) - 1, 8)])
                 if last_packet_length:
                     self._sample("packet_interval", last_packet_length)
             else:
@@ -286,3 +290,7 @@ class NECCode(IRCode):
 
         self.data = packets
         self.count = repeats + 1
+
+class NECBCode(NECCode):
+    NAMES = ["necb"]
+    ENDIAN = "b"

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from .core import *
-from .formats.nec import NECCode
+from .formats.nec import NECCode, NECBCode
 from .formats.rc5 import RC5Code
 from .formats.broadlink import BroadlinkCode, BroadlinkHexCode
 from .formats.pronto import ProntoCode
@@ -12,6 +12,7 @@ FORMATS = [
     RawPmCode,
     RC5Code,
     NECCode,
+    NECBCode,
     BroadlinkCode,
     BroadlinkHexCode,
     ProntoCode,
